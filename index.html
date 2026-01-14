@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Session Timer</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:rgba(255,255,255,0.07);
+      --txt:#fff; --muted:#cbd5e1; --accent:#FFB606;
+      --border:rgba(255,255,255,0.12);
+    }
+    body{
+      margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(1200px 700px at 20% 10%, #1f2a44, var(--bg));
+      color:var(--txt); padding:24px;
+    }
+    .wrap{ width:min(900px,100%); }
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:18px; padding:22px; box-shadow:0 18px 40px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+    }
+    h1{ margin:0 0 10px; font-size:2rem; }
+    p{ margin:0 0 14px; color:var(--muted); line-height:1.45; }
+    .btns{ display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+    a.btn{
+      display:inline-block; padding:12px 16px; border-radius:12px;
+      text-decoration:none; font-weight:900;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.18); color: var(--txt);
+    }
+    a.btn.primary{ background:#fff; color:#111; border:none; }
+    .pill{
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.25);
+      color: var(--muted); font-size:0.9rem; margin-right:8px; margin-top:8px;
+    }
+    footer{
+      margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75); font-size:0.95rem;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent);
+      box-shadow:0 0 14px rgba(255,182,6,0.55); display:inline-block; margin-right:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1><span class="dot"></span>Session Timer (Web)</h1>
+      <p>
+        A large-screen, conference-ready presentation timer with speaker + evaluation phases,
+        configurable by copy-pasting participant names from Excel. Works offline after first load.
+      </p>
+
+      <div>
+        <span class="pill">Speaker → Judges → Next</span>
+        <span class="pill">Big screen</span>
+        <span class="pill">Excel paste</span>
+        <span class="pill">Offline-friendly</span>
+      </div>
+
+      <div class="btns">
+        <a class="btn primary" href="settings.html">Open Settings</a>
+        <a class="btn" href="timer.html">Open Timer</a>
+        <a class="btn" href="README.html" onclick="return true;">Docs (README)</a>
+      </div>
+
+      <footer>
+        <div>Developed by <strong>Panduka Neluwala</strong></div>
+        <div>
+          Tip: Start with <strong>Settings</strong> → “Save & Open Timer”
+        </div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
