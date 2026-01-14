@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Presentation Timer</title>
+  <style>
+    :root {
+      --bg-normal: linear-gradient(135deg, #134E5E, #71B280);
+      --bg-warn: linear-gradient(135deg, #FF8008, #FFC837);
+      --bg-stop: linear-gradient(135deg, #EB3349, #F45C43);
+      --bg-break: linear-gradient(135deg, #232526, #414345);
+
+      --card-bg: rgba(0, 0, 0, 0.55);
+      --text-main: #ffffff;
+      --text-muted: #d1d5db;
+
+      --brand-a: #A80D0C; /* accent2 */
+      --brand-b: #FFB606; /* accent */
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-normal);
+      overflow: hidden;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 30px;
+      width: 95%;
+      max-width: 1600px;
+      height: 90vh;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(15px);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brandbar {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      z-index: 5;
+      min-width: 340px;
+      justify-content: center;
+      text-align: center;
+    }
+    .brand-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--brand-b);
+      box-shadow: 0 0 18px rgba(255,182,6,0.6);
+      flex: 0 0 auto;
+    }
+    .brand-text {
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 1.05rem;
+      line-height: 1.1;
+    }
+    .brand-sub {
+      font-weight: 650;
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+    .brand-stack { display: flex; flex-direction: column; }
+
+    .timer-panel { text-align: center; position: relative; }
+
+    .phase-badge {
+      position: absolute;
+      top: 85px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.15);
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+    }
+
+    .current-name {
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin: 55px 0 35px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      min-height: 2.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+    }
+
+    .time-display {
+      font-size: clamp(6rem, 15vw, 11rem);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+      transition: width 1s linear;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 900;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    button:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    button.primary { background: #fff; color: #333; }
+    button.danger { background: rgba(255, 80, 80, 0.4); }
+
+    .list-panel { justify-content: flex-start; overflow: hidden; }
+
+    .list-header {
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      padding-bottom: 15px;
+      opacity: 0.9;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.08);
+      margin-bottom: 15px;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .queue-badge {
+      background: rgba(0,0,0,0.3);
+      font-size: 1rem;
+      padding: 5px 10px;
+      border-radius: 6px;
+      margin-right: 15px;
+      color: #ccc;
+      flex: 0 0 auto;
+    }
+
+    #start-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    #start-overlay h1 { font-size: 3rem; margin-bottom: 10px; }
+    #start-overlay .tag {
+      color: var(--brand-b);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+    #start-overlay button { font-size: 2rem; padding: 20px 50px; background: #71B280; color: #000; }
+
+    .tiny-link {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+    }
+    .tiny-link:hover { opacity: 1; }
+
+    @media (max-width: 1000px) {
+      .container { grid-template-columns: 1fr; height: auto; }
+      .queue-item { font-size: 1.4rem; }
+      body { overflow-y: auto; padding: 20px; }
+      .brandbar { position: relative; top: 0; left: 0; transform: none; margin: 0 auto 12px; }
+      .phase-badge { top: 130px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="start-overlay">
+    <div class="tag" id="overlay-tag">Presentation Session</div>
+    <h1 id="overlay-title">Presentation Timer</h1>
+    <button onclick="initSystem()">START SESSION</button>
+    <p style="margin-top:20px; color:#aaa;">(Click to enable audio)</p>
+    <p style="margin-top:10px;">
+      <a class="tiny-link" href="settings.html">← Back to Settings</a>
+    </p>
+  </div>
+
+  <div class="container">
+    <div class="panel timer-panel">
+      <div class="brandbar">
+        <span class="brand-dot"></span>
+        <div class="brand-stack">
+          <div class="brand-text" id="brand-title">Presentation Timer</div>
+          <div class="brand-sub" id="brand-subtitle">Speaker Session</div>
+        </div>
+      </div>
+
+      <div class="phase-badge" id="phase-badge">Speaker Session</div>
+      <div class="current-name" id="current-name">Loading...</div>
+      <div class="time-display" id="time-display">00:00</div>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-bar"></div>
+      </div>
+
+      <div class="controls">
+        <button onclick="prevSpeaker()">&#8592; Previous</button>
+        <button class="primary" onclick="togglePause()" id="btn-pause">Pause</button>
+        <button onclick="nextSpeaker(true)">Next &#8594;</button>
+        <button class="danger" onclick="resetTimer()">Reset Current</button>
+        <button onclick="testBell()">Test Sound</button>
+        <button onclick="goSettings()">Settings</button>
+      </div>
+    </div>
+
+    <div class="panel list-panel">
+      <div class="list-header">
+        <span>Up Next</span>
+        <a class="tiny-link" href="settings.html">Edit list</a>
+      </div>
+      <div id="queue-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const KEY = "presentationTimerConfig_v1";
+
+    function loadConfig(){
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return null;
+      try { return JSON.parse(raw); } catch(e){ return null; }
+    }
+
+    // Fallback if settings not saved
+    const fallbackCfg = {
+      appTitle: "Presentation Timer",
+      appSubtitle: "Speaker Session",
+      speechTime: 180,
+      judgeTime: 30,
+      warningAt: 30,
+      showNextN: 3,
+      bellSpeakerStart: true,
+      bellJudgesStart: true,
+      accentGold: "#FFB606",
+      accentRed: "#A80D0C",
+      names: ["Participant 1", "Participant 2", "Participant 3"]
+    };
+
+    const cfg = loadConfig() || fallbackCfg;
+
+    // Apply branding
+    document.documentElement.style.setProperty("--brand-b", cfg.accentGold || "#FFB606");
+    document.documentElement.style.setProperty("--brand-a", cfg.accentRed || "#A80D0C");
+
+    // CONFIG (from settings)
+    const SPEECH_TIME = Math.max(5, Number(cfg.speechTime || 180));
+    const JUDGE_TIME  = Math.max(0, Number(cfg.judgeTime || 30));
+    const WARNING_AT  = Math.max(0, Number(cfg.warningAt || 30));
+    const SHOW_NEXT_N = Math.min(10, Math.max(1, Number(cfg.showNextN || 3)));
+
+    const BELL_AT_SPEAKER_START = !!cfg.bellSpeakerStart;
+    const BELL_AT_JUDGES_START  = !!cfg.bellJudgesStart;
+
+    const rawNames = (cfg.names || []).filter(Boolean);
+    if(!rawNames.length) rawNames.push("Participant 1");
+
+    // Titles
+    document.getElementById("brand-title").innerText = cfg.appTitle || "Presentation Timer";
+    document.getElementById("brand-subtitle").innerText = cfg.appSubtitle || "Speaker Session";
+    document.getElementById("overlay-title").innerText = cfg.appTitle || "Presentation Timer";
+    document.getElementById("overlay-tag").innerText = cfg.appSubtitle || "Presentation Session";
+
+    /* STATE */
+    let currentIndex = 0;
+    let timeLeft = SPEECH_TIME;
+    let phase = 'speech'; // 'speech' | 'transition'
+    let timerInterval = null;
+    let isPaused = false;
+    let audioCtx;
+
+    /* AUDIO */
+    function initAudio() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+    }
+
+    function playLoudBell(count = 1) {
+      if (!audioCtx) return;
+
+      const playTone = (startTime) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, startTime);
+        osc.frequency.exponentialRampToValueAtTime(300, startTime + 1.0);
+
+        gain.gain.setValueAtTime(0.38, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 1.0);
+
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(900, startTime);
+
+        const gain2 = audioCtx.createGain();
+        gain2.gain.setValueAtTime(0.6, startTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, startTime + 1.2);
+
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc2.connect(gain2); gain2.connect(audioCtx.destination);
+
+        osc.start(startTime);  osc.stop(startTime + 1.0);
+        osc2.start(startTime); osc2.stop(startTime + 1.2);
+      };
+
+      playTone(audioCtx.currentTime);
+      if (count > 1) playTone(audioCtx.currentTime + 0.6);
+    }
+
+    /* UI */
+    function formatTime(s) {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = (s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    function updateUI() {
+      document.getElementById('time-display').innerText = formatTime(timeLeft);
+
+      if (phase === 'speech') {
+        document.getElementById('current-name').innerText =
+          `${currentIndex + 1}. ${rawNames[currentIndex]}`;
+        document.getElementById('phase-badge').innerText = isPaused ? "PAUSED" : "SPEAKER SESSION";
+
+        if (timeLeft > WARNING_AT) {
+          document.body.style.background = "var(--bg-normal)";
+        } else if (timeLeft <= WARNING_AT && timeLeft > 0) {
+          document.body.style.background = "var(--bg-warn)";
+        } else {
+          document.body.style.background = "var(--bg-stop)";
+        }
+
+        const percentage = ((SPEECH_TIME - timeLeft) / SPEECH_TIME) * 100;
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+      } else {
+        document.getElementById('current-name').innerText = "Judges / Changeover";
+        document.getElementById('phase-badge').innerText = isPaused ? "PAUSED" : "NEXT SPEAKER PREPARING...";
+        document.body.style.background = "var(--bg-break)";
+
+        const denom = (JUDGE_TIME === 0) ? 1 : JUDGE_TIME;
+        const percentage = ((denom - timeLeft) / denom) * 100;
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+      }
+
+      // Next N names
+      const queueContainer = document.getElementById('queue-list');
+      queueContainer.innerHTML = "";
+
+      let lookAheadStart = currentIndex + 1;
+      for (let i = 0; i < SHOW_NEXT_N; i++) {
+        const idx = lookAheadStart + i;
+        if (idx < rawNames.length) {
+          const div = document.createElement('div');
+          div.className = 'queue-item';
+          div.innerHTML = `<span class="queue-badge">NEXT</span> ${idx + 1}. ${rawNames[idx]}`;
+          queueContainer.appendChild(div);
+        }
+      }
+    }
+
+    /* PHASE HELPERS */
+    function startSpeech(withBell = false) {
+      phase = 'speech';
+      timeLeft = SPEECH_TIME;
+      if (withBell && BELL_AT_SPEAKER_START) playLoudBell(1);
+      updateUI();
+    }
+
+    function startTransition(withBell = false) {
+      phase = 'transition';
+      timeLeft = JUDGE_TIME;
+      if (withBell && BELL_AT_JUDGES_START) playLoudBell(1);
+      updateUI();
+    }
+
+    function tick() {
+      if (isPaused) return;
+
+      // If judge time is zero, jump immediately
+      if (phase === 'transition' && JUDGE_TIME === 0) {
+        nextSpeaker(true);
+        return;
+      }
+
+      timeLeft--;
+
+      if (phase === 'speech') {
+        if (timeLeft === WARNING_AT) {
+          playLoudBell(1);
+          updateUI();
+        }
+
+        if (timeLeft <= 0) {
+          playLoudBell(2);
+          startTransition(true);
+          return;
+        }
+      } else {
+        if (timeLeft <= 0) {
+          nextSpeaker(true);
+          return;
+        }
+      }
+
+      updateUI();
+    }
+
+    /* CONTROLS */
+    function initSystem() {
+      document.getElementById('start-overlay').style.display = 'none';
+      initAudio();
+      updateUI();
+      timerInterval = setInterval(tick, 1000);
+
+      if (BELL_AT_SPEAKER_START) playLoudBell(1);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('btn-pause').innerText = isPaused ? "Resume" : "Pause";
+      updateUI();
+    }
+
+    function nextSpeaker(withBell = false) {
+      if (currentIndex < rawNames.length - 1) {
+        currentIndex++;
+        startSpeech(withBell);
+      } else {
+        clearInterval(timerInterval);
+        document.getElementById('current-name').innerText = "Session Complete";
+        document.getElementById('phase-badge').innerText = "DONE";
+        document.getElementById('time-display').innerText = "00:00";
+        document.getElementById('progress-bar').style.width = "100%";
+        document.body.style.background = "var(--bg-break)";
+      }
+    }
+
+    function prevSpeaker() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        startSpeech(true);
+      }
+    }
+
+    function resetTimer() {
+      if (phase === 'speech') startSpeech(false);
+      else startTransition(false);
+    }
+
+    function testBell() { playLoudBell(1); }
+
+    function goSettings(){
+      window.location.href = "settings.html";
+    }
+
+    /* KEYBOARD SHORTCUTS */
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') togglePause();
+      if (e.code === 'ArrowRight') nextSpeaker(true);
+      if (e.code === 'ArrowLeft') prevSpeaker();
+      if (e.key.toLowerCase() === 'r') resetTimer();
+      if (e.key.toLowerCase() === 's') goSettings();
+    });
+
+    // Initial UI
+    updateUI();
+  </script>
+</body>
+</html>
