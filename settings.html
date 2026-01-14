@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Timer Settings</title>
+  <style>
+    :root{
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.07);
+      --txt: #fff;
+      --muted:#cbd5e1;
+      --accent:#FFB606;
+      --accent2:#A80D0C;
+      --border: rgba(255,255,255,0.12);
+    }
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, #1f2a44, var(--bg));
+      color: var(--txt);
+      min-height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 24px;
+    }
+    .wrap{
+      width: min(1100px, 100%);
+      display:grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    }
+    h1{ margin: 0 0 10px; font-size: 1.6rem; }
+    .sub{ color: var(--muted); margin: 0 0 14px; line-height:1.4; }
+    label{ display:block; margin: 12px 0 6px; font-weight: 800; }
+    input, textarea, select{
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      color: var(--txt);
+      padding: 10px 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+    textarea{ min-height: 240px; resize: vertical; }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .btns{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    button{
+      border:none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-weight: 900;
+      cursor:pointer;
+      font-size: 1rem;
+      color: #111;
+      background: #fff;
+    }
+    button.secondary{
+      background: rgba(255,255,255,0.14);
+      color: var(--txt);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+    button.danger{
+      background: rgba(255,80,80,0.35);
+      color: var(--txt);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.35;
+      margin-top: 10px;
+    }
+    .pill{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25);
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-right: 8px;
+      margin-top: 8px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .count{
+      display:inline-flex;
+      gap: 10px;
+      align-items:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.22);
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .dot{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(255,182,6,0.55);
+      flex: 0 0 auto;
+    }
+    .footer{
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75);
+      font-size: 0.95rem;
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .footer strong{
+      color: #fff;
+      font-weight: 900;
+    }
+    a.link{
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.18);
+    }
+    a.link:hover{ opacity: 0.95; }
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <div>
+          <h1>Timer Settings</h1>
+          <p class="sub">
+            Configure your session here. Settings are saved in your browser (LocalStorage).
+          </p>
+        </div>
+        <div class="count" title="Participant count detected from the box">
+          <span class="dot"></span>
+          <span id="countText">Participants: 0</span>
+        </div>
+      </div>
+
+      <label>App Title</label>
+      <input id="appTitle" placeholder="e.g., CAPSLE Presentation Timer"/>
+
+      <label>App Subtitle</label>
+      <input id="appSubtitle" placeholder="e.g., 3-Minute Presentations"/>
+
+      <div class="row">
+        <div>
+          <label>Speaker Duration (seconds)</label>
+          <input id="speechTime" type="number" min="5" value="180"/>
+        </div>
+        <div>
+          <label>Evaluation/Judges Duration (seconds)</label>
+          <input id="judgeTime" type="number" min="0" value="30"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Warning at (seconds remaining)</label>
+          <input id="warningAt" type="number" min="0" value="30"/>
+        </div>
+        <div>
+          <label>Show next how many names?</label>
+          <input id="showNextN" type="number" min="1" max="10" value="3"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Bell at speaker start</label>
+          <select id="bellSpeakerStart">
+            <option value="true" selected>Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div>
+          <label>Bell at judges start</label>
+          <select id="bellJudgesStart">
+            <option value="true" selected>Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Accent Color (e.g. #FFB606)</label>
+          <input id="accentGold" value="#FFB606"/>
+        </div>
+        <div>
+          <label>Accent Color 2 (e.g. #A80D0C)</label>
+          <input id="accentRed" value="#A80D0C"/>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button onclick="saveSettings()">Save</button>
+        <button class="secondary" onclick="saveAndOpen()">Save & Open Timer</button>
+        <button class="secondary" onclick="loadSettings()">Reload Saved</button>
+        <button class="danger" onclick="resetSettings()">Reset Defaults</button>
+      </div>
+
+      <div class="hint">
+        <span class="pill">Excel friendly</span>
+        You can paste from Excel as a column, a row, or multiple cells.
+        Tabs/newlines/commas are all handled. Leading numbering like “1. Name” is removed.
+      </div>
+
+      <div class="footer">
+        <div>Developed by <strong>Panduka Neluwala</strong></div>
+        <div><a class="link" href="timer.html" title="Open timer (uses saved settings)">Open Timer →</a></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Participants (paste from Excel)</label>
+      <textarea id="names" placeholder="Paste names here...&#10;One per line OR copied cells from Excel"></textarea>
+
+      <div class="hint">
+        <div class="pill">Offline</div> Put <strong>settings.html</strong> + <strong>timer.html</strong> in one folder and open settings.html.
+        <br/>
+        <div class="pill">Online</div> Upload both files once. After that, just edit here—no re-upload needed.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KEY = "presentationTimerConfig_v1";
+
+    function defaultConfig(){
+      return {
+        appTitle: "Presentation Timer",
+        appSubtitle: "Speaker Session",
+        speechTime: 180,
+        judgeTime: 30,
+        warningAt: 30,
+        showNextN: 3,
+        bellSpeakerStart: true,
+        bellJudgesStart: true,
+        accentGold: "#FFB606",
+        accentRed: "#A80D0C",
+        names: ["Participant 1", "Participant 2", "Participant 3"]
+      };
+    }
+
+    function parseNames(text){
+      const t = (text || "").trim();
+      if(!t) return [];
+
+      // Split on new lines OR tabs (Excel cells) OR commas/semicolons
+      return t
+        .split(/[\n\t,;]+/g)
+        .map(s => s.trim())
+        .filter(Boolean)
+        // Remove leading numbering like: "1. Name", "1) Name", "1 - Name"
+        .map(s => s.replace(/^\s*\d+\s*[.)-]\s*/, "").trim())
+        .filter(Boolean);
+    }
+
+    function updateCount(){
+      const namesText = document.getElementById("names").value;
+      const names = parseNames(namesText);
+      document.getElementById("countText").innerText = `Participants: ${names.length}`;
+    }
+
+    function fillForm(cfg){
+      document.getElementById("appTitle").value = cfg.appTitle ?? "";
+      document.getElementById("appSubtitle").value = cfg.appSubtitle ?? "";
+      document.getElementById("speechTime").value = Number(cfg.speechTime ?? 180);
+      document.getElementById("judgeTime").value = Number(cfg.judgeTime ?? 30);
+      document.getElementById("warningAt").value = Number(cfg.warningAt ?? 30);
+      document.getElementById("showNextN").value = Number(cfg.showNextN ?? 3);
+      document.getElementById("bellSpeakerStart").value = String(!!cfg.bellSpeakerStart);
+      document.getElementById("bellJudgesStart").value = String(!!cfg.bellJudgesStart);
+      document.getElementById("accentGold").value = cfg.accentGold ?? "#FFB606";
+      document.getElementById("accentRed").value = cfg.accentRed ?? "#A80D0C";
+      document.getElementById("names").value = (cfg.names || []).join("\n");
+      updateCount();
+    }
+
+    function getForm(){
+      const cfg = {
+        appTitle: document.getElementById("appTitle").value.trim() || "Presentation Timer",
+        appSubtitle: document.getElementById("appSubtitle").value.trim() || "",
+        speechTime: Number(document.getElementById("speechTime").value || 180),
+        judgeTime: Number(document.getElementById("judgeTime").value || 30),
+        warningAt: Number(document.getElementById("warningAt").value || 30),
+        showNextN: Number(document.getElementById("showNextN").value || 3),
+        bellSpeakerStart: document.getElementById("bellSpeakerStart").value === "true",
+        bellJudgesStart: document.getElementById("bellJudgesStart").value === "true",
+        accentGold: document.getElementById("accentGold").value.trim() || "#FFB606",
+        accentRed: document.getElementById("accentRed").value.trim() || "#A80D0C",
+        names: parseNames(document.getElementById("names").value)
+      };
+      return cfg;
+    }
+
+    function saveSettings(){
+      const cfg = getForm();
+      if(!cfg.names.length){
+        alert("Please add at least one participant name.");
+        return;
+      }
+      localStorage.setItem(KEY, JSON.stringify(cfg));
+      alert(`Saved! (${cfg.names.length} participants)`);
+    }
+
+    function saveAndOpen(){
+      saveSettings();
+      window.location.href = "timer.html";
+    }
+
+    function loadSettings(){
+      const raw = localStorage.getItem(KEY);
+      if(!raw){
+        fillForm(defaultConfig());
+        alert("No saved settings found. Loaded defaults.");
+        return;
+      }
+      try{
+        fillForm(JSON.parse(raw));
+      }catch(e){
+        fillForm(defaultConfig());
+        alert("Saved settings were corrupted. Loaded defaults.");
+      }
+    }
+
+    function resetSettings(){
+      localStorage.removeItem(KEY);
+      fillForm(defaultConfig());
+      alert("Reset to defaults.");
+    }
+
+    // Live count updates while pasting/typing
+    document.getElementById("names").addEventListener("input", updateCount);
+
+    // Load defaults or existing
+    loadSettings();
+  </script>
+</body>
+</html>
