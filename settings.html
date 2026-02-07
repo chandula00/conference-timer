@@ -131,7 +131,7 @@
     }
     .footer{
       margin-top: 16px;
-      padding-top: 12px;
+      padding-top: 16px;
       border-top: 1px solid rgba(255,255,255,0.12);
       color: rgba(255,255,255,0.75);
       font-size: 0.95rem;
@@ -184,18 +184,18 @@
       <div class="row">
         <div>
           <label>Speaker Duration (seconds)</label>
-          <input id="speechTime" type="number" min="5" value="180"/>
+          <input id="speechTime" type="number" min="5" value="900"/>
         </div>
         <div>
           <label>Evaluation/Judges Duration (seconds)</label>
-          <input id="judgeTime" type="number" min="0" value="30"/>
+          <input id="judgeTime" type="number" min="0" value="900"/>
         </div>
       </div>
 
       <div class="row">
         <div>
           <label>Warning at (seconds remaining)</label>
-          <input id="warningAt" type="number" min="0" value="30"/>
+          <input id="warningAt" type="number" min="0" value="120"/>
         </div>
         <div>
           <label>Show next how many names?</label>
@@ -239,13 +239,14 @@
       </div>
 
       <div class="hint">
-        <span class="pill">Excel friendly</span>
+        <span class="pill">Excel friendly</span> <br/>
         You can paste from Excel as a column, a row, or multiple cells.
-        Tabs/newlines/commas are all handled. Leading numbering like “1. Name” is removed.
+        Tabs/newlines/commas/leading numbering are all handled.
       </div>
 
       <div class="footer">
-        <div>Developed by <strong>Panduka Neluwala</strong></div>
+        <div>  </div>
+        <!-- <div>Developed by <strong>Panduka Neluwala</strong></div> -->
         <div><a class="link" href="timer.html" title="Open timer (uses saved settings)">Open Timer →</a></div>
       </div>
     </div>
@@ -267,17 +268,17 @@
 
     function defaultConfig(){
       return {
-        appTitle: "Presentation Timer",
-        appSubtitle: "Speaker Session",
-        speechTime: 180,
-        judgeTime: 30,
-        warningAt: 30,
-        showNextN: 3,
+        appTitle: "Proposal Presentation Timer",
+        appSubtitle: "Presentations: 15 mins | Q&A: 15 mins",
+        speechTime: 900,
+        judgeTime: 900,
+        warningAt: 120,
+        showNextN: 5,
         bellSpeakerStart: true,
-        bellJudgesStart: true,
+        bellJudgesStart: false,
         accentGold: "#FFB606",
         accentRed: "#A80D0C",
-        names: ["Participant 1", "Participant 2", "Participant 3"]
+        names: ["Group 1", "Group 2", "Group 3"]
       };
     }
 
@@ -304,9 +305,9 @@
     function fillForm(cfg){
       document.getElementById("appTitle").value = cfg.appTitle ?? "";
       document.getElementById("appSubtitle").value = cfg.appSubtitle ?? "";
-      document.getElementById("speechTime").value = Number(cfg.speechTime ?? 180);
-      document.getElementById("judgeTime").value = Number(cfg.judgeTime ?? 30);
-      document.getElementById("warningAt").value = Number(cfg.warningAt ?? 30);
+      document.getElementById("speechTime").value = Number(cfg.speechTime ?? 900);
+      document.getElementById("judgeTime").value = Number(cfg.judgeTime ?? 900);
+      document.getElementById("warningAt").value = Number(cfg.warningAt ?? 120);
       document.getElementById("showNextN").value = Number(cfg.showNextN ?? 3);
       document.getElementById("bellSpeakerStart").value = String(!!cfg.bellSpeakerStart);
       document.getElementById("bellJudgesStart").value = String(!!cfg.bellJudgesStart);
@@ -318,11 +319,11 @@
 
     function getForm(){
       const cfg = {
-        appTitle: document.getElementById("appTitle").value.trim() || "Presentation Timer",
+        appTitle: document.getElementById("appTitle").value.trim() || "Proposal Presentation Timer",
         appSubtitle: document.getElementById("appSubtitle").value.trim() || "",
-        speechTime: Number(document.getElementById("speechTime").value || 180),
-        judgeTime: Number(document.getElementById("judgeTime").value || 30),
-        warningAt: Number(document.getElementById("warningAt").value || 30),
+        speechTime: Number(document.getElementById("speechTime").value || 900),
+        judgeTime: Number(document.getElementById("judgeTime").value || 900),
+        warningAt: Number(document.getElementById("warningAt").value || 120),
         showNextN: Number(document.getElementById("showNextN").value || 3),
         bellSpeakerStart: document.getElementById("bellSpeakerStart").value === "true",
         bellJudgesStart: document.getElementById("bellJudgesStart").value === "true",

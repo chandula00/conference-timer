@@ -309,17 +309,17 @@
 
     // Fallback if settings not saved
     const fallbackCfg = {
-      appTitle: "Presentation Timer",
-      appSubtitle: "Speaker Session",
-      speechTime: 180,
-      judgeTime: 30,
-      warningAt: 30,
-      showNextN: 3,
+      appTitle: "Proposal Presentation Timer",
+      appSubtitle: "Presentations: 15 mins | Q&A: 15 mins",
+      speechTime: 900,
+      judgeTime: 900,
+      warningAt: 120,
+      showNextN: 5,
       bellSpeakerStart: true,
       bellJudgesStart: true,
       accentGold: "#FFB606",
       accentRed: "#A80D0C",
-      names: ["Participant 1", "Participant 2", "Participant 3"]
+      names: ["Group 1", "Group 2", "Group 3"]
     };
 
     const cfg = loadConfig() || fallbackCfg;
@@ -353,44 +353,52 @@
     let timerInterval = null;
     let isPaused = false;
     let audioCtx;
+    let bellAudioBuffer = null;
 
     /* AUDIO */
     function initAudio() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContext();
+      loadBellAudio();
+    }
+
+    async function loadBellAudio() {
+      try {
+        const response = await fetch('scottishperson-sound-effect-old-phone-191761.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        bellAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      } catch (error) {
+        console.error('Failed to load bell audio:', error);
+      }
     }
 
     function playLoudBell(count = 1) {
-      if (!audioCtx) return;
+      if (!audioCtx || !bellAudioBuffer) {
+        console.warn('Audio not ready');
+        return;
+      }
 
-      const playTone = (startTime) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(900, startTime);
-        osc.frequency.exponentialRampToValueAtTime(300, startTime + 1.0);
-
-        gain.gain.setValueAtTime(0.38, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 1.0);
-
-        const osc2 = audioCtx.createOscillator();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(900, startTime);
-
-        const gain2 = audioCtx.createGain();
-        gain2.gain.setValueAtTime(0.6, startTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, startTime + 1.2);
-
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-
-        osc.start(startTime);  osc.stop(startTime + 1.0);
-        osc2.start(startTime); osc2.stop(startTime + 1.2);
+      const playBell = (delay = 0) => {
+        setTimeout(() => {
+          const source = audioCtx.createBufferSource();
+          source.buffer = bellAudioBuffer;
+          
+          // Create a gain node for volume control
+          const gainNode = audioCtx.createGain();
+          gainNode.gain.value = 1.0; // Full volume
+          
+          source.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          // Play only the first 5 seconds
+          source.start(0, 0, 5);
+        }, delay);
       };
 
-      playTone(audioCtx.currentTime);
-      if (count > 1) playTone(audioCtx.currentTime + 0.6);
+      playBell(0);
+      if (count > 1) {
+        playBell(700); // Play second bell after 700ms
+      }
     }
 
     /* UI */
@@ -404,9 +412,8 @@
       document.getElementById('time-display').innerText = formatTime(timeLeft);
 
       if (phase === 'speech') {
-        document.getElementById('current-name').innerText =
-          `${currentIndex + 1}. ${rawNames[currentIndex]}`;
-        document.getElementById('phase-badge').innerText = isPaused ? "PAUSED" : "SPEAKER SESSION";
+        document.getElementById('current-name').innerText = rawNames[currentIndex];
+        document.getElementById('phase-badge').innerText = isPaused ? "PAUSED" : "Presentation Time";
 
         if (timeLeft > WARNING_AT) {
           document.body.style.background = "var(--bg-normal)";
@@ -419,7 +426,7 @@
         const percentage = ((SPEECH_TIME - timeLeft) / SPEECH_TIME) * 100;
         document.getElementById('progress-bar').style.width = `${percentage}%`;
       } else {
-        document.getElementById('current-name').innerText = "Judges / Changeover";
+        document.getElementById('current-name').innerText = "Q&A / Feedbacks";
         document.getElementById('phase-badge').innerText = isPaused ? "PAUSED" : "NEXT SPEAKER PREPARING...";
         document.body.style.background = "var(--bg-break)";
 
@@ -438,7 +445,7 @@
         if (idx < rawNames.length) {
           const div = document.createElement('div');
           div.className = 'queue-item';
-          div.innerHTML = `<span class="queue-badge">NEXT</span> ${idx + 1}. ${rawNames[idx]}`;
+          div.innerHTML = `<span class="queue-badge">NEXT</span> ${rawNames[idx]}`;
           queueContainer.appendChild(div);
         }
       }
@@ -482,8 +489,17 @@
           return;
         }
       } else {
+        // Ring bell 5 seconds before Q&A ends
+        if (timeLeft === 5) {
+          playLoudBell(1);
+          updateUI();
+        }
+
         if (timeLeft <= 0) {
-          nextSpeaker(true);
+          // Pause after Q&A session instead of auto-advancing
+          isPaused = true;
+          document.getElementById('btn-pause').innerText = "Resume";
+          updateUI();
           return;
         }
       }
